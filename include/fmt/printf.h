@@ -181,7 +181,7 @@ template <typename Char> class printf_width_handler {
 template <typename Char, typename Context>
 void vprintf(buffer<Char>& buf, basic_string_view<Char> format,
              basic_format_args<Context> args) {
-  Context(std::back_inserter(buf), format, args).format();
+  Context(buffer_appender<Char>(buf), format, args).format();
 }
 }  // namespace detail
 
@@ -598,7 +598,7 @@ OutputIt basic_printf_context<OutputIt, Char>::format() {
 
 template <typename Char>
 using basic_printf_context_t =
-    basic_printf_context<std::back_insert_iterator<detail::buffer<Char>>, Char>;
+    basic_printf_context<detail::buffer_appender<Char>, Char>;
 
 using printf_context = basic_printf_context_t<char>;
 using wprintf_context = basic_printf_context_t<wchar_t>;
@@ -714,7 +714,7 @@ inline int vfprintf(
     basic_format_args<basic_printf_context_t<type_identity_t<Char>>> args) {
   basic_memory_buffer<Char> buffer;
   vprintf(buffer, to_string_view(format), args);
-  detail::write(os, buffer);
+  detail::write_buffer(os, buffer);
   return static_cast<int>(buffer.size());
 }
 
